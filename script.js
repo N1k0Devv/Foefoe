@@ -191,27 +191,29 @@ document.addEventListener("DOMContentLoaded", function () {
     scrollElements.forEach((element, index) => {
       scrollTriggerRef.create({
         trigger: element,
-        start: "top 85%",
+        start: "top 92%",
         once: true,
         onEnter: () => {
+          const revealDelay = (index % 3) * 45;
           setTimeout(() => {
             element.classList.add("visible");
-          }, index * 100);
+          }, revealDelay);
         },
       });
     });
   } else {
     const observerOptions = {
       threshold: 0.1,
-      rootMargin: "0px 0px -80px 0px",
+      rootMargin: "0px 0px -20px 0px",
     };
 
     const observer = new IntersectionObserver(function (entries) {
       entries.forEach((entry, index) => {
         if (entry.isIntersecting) {
+          const revealDelay = (index % 3) * 45;
           setTimeout(() => {
             entry.target.classList.add("visible");
-          }, index * 100);
+          }, revealDelay);
           observer.unobserve(entry.target);
         }
       });
