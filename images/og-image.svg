@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="MEDEA social card">
+  <rect width="1200" height="630" fill="#1f1f24" />
+  <circle cx="980" cy="140" r="220" fill="#5b1020" opacity="0.9" />
+  <circle cx="230" cy="520" r="260" fill="#c8a564" opacity="0.35" />
+  <text x="90" y="280" font-size="108" font-family="Cormorant Garamond, serif" fill="#f7efe3" letter-spacing="8">MEDEA</text>
+  <text x="90" y="360" font-size="48" font-family="Noto Serif Georgian, serif" fill="#c8a564">ბარ-რესტორანი</text>
+  <text x="90" y="430" font-size="34" font-family="Manrope, sans-serif" fill="#f7efe3">Kutaisi • St. Nino 17 • 511 40 30 40</text>
+</svg>

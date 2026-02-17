@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 560">
+  <rect width="720" height="560" fill="#1f1f24" />
+  <rect x="90" y="90" width="540" height="380" rx="32" fill="#f7efe3" />
+  <circle cx="560" cy="170" r="72" fill="#c8a564" opacity="0.8" />
+  <text x="140" y="290" font-size="44" font-family="Cormorant Garamond, serif" fill="#5b1020">European</text>
+  <text x="140" y="340" font-size="36" font-family="Cormorant Garamond, serif" fill="#1f1f24">Comfort</text>
+</svg>

@@ -1,6 +1,93 @@
-// Enhanced JavaScript for Tea House Foe Foe website with smooth animations
+// Enhanced JavaScript for MEDEA Bar-Restaurant website with smooth animations
 
 document.addEventListener("DOMContentLoaded", function () {
+  const gsapRef = window.gsap;
+  const scrollToRef = window.ScrollToPlugin;
+  const scrollTriggerRef = window.ScrollTrigger;
+  const LenisCtor = window.Lenis;
+
+  const hasGsapScroll =
+    typeof gsapRef !== "undefined" &&
+    typeof scrollToRef !== "undefined";
+  const hasGsapTrigger =
+    typeof gsapRef !== "undefined" &&
+    typeof scrollTriggerRef !== "undefined";
+
+  if (hasGsapScroll) {
+    gsapRef.registerPlugin(scrollToRef);
+  }
+  if (hasGsapTrigger) {
+    gsapRef.registerPlugin(scrollTriggerRef);
+  }
+
+  let lenis = null;
+  if (typeof LenisCtor !== "undefined") {
+    lenis = new LenisCtor({
+      duration: 1.05,
+      smoothWheel: true,
+      smoothTouch: false,
+      wheelMultiplier: 0.9,
+      normalizeWheel: true,
+    });
+
+    if (hasGsapTrigger) {
+      lenis.on("scroll", () => {
+        scrollTriggerRef.update();
+      });
+    }
+
+    if (typeof gsapRef !== "undefined") {
+      gsapRef.ticker.add((time) => {
+        lenis.raf(time * 1000);
+      });
+      gsapRef.ticker.lagSmoothing(0);
+    } else {
+      const raf = (time) => {
+        lenis.raf(time);
+        window.requestAnimationFrame(raf);
+      };
+      window.requestAnimationFrame(raf);
+    }
+  }
+
+  function getHeaderOffset() {
+    const header = document.querySelector(".navbar");
+    return header ? header.offsetHeight : 100;
+  }
+
+  function smoothScrollToTarget(target, duration = 1.05) {
+    if (lenis) {
+      const options = {
+        duration: Math.max(0.7, duration),
+        easing: (t) => 1 - Math.pow(1 - t, 3),
+      };
+
+      if (typeof target === "number") {
+        lenis.scrollTo(Math.max(0, target), options);
+      } else {
+        lenis.scrollTo(target, { ...options, offset: -getHeaderOffset() });
+      }
+      return;
+    }
+
+    const y =
+      typeof target === "number"
+        ? target
+        : target.getBoundingClientRect().top + window.scrollY - getHeaderOffset();
+
+    if (hasGsapScroll) {
+      gsapRef.killTweensOf(window);
+      gsapRef.to(window, {
+        duration,
+        scrollTo: { y: Math.max(0, y), autoKill: true },
+        ease: "power2.out",
+      });
+      return;
+    }
+
+    window.scrollTo({ top: y, behavior: "smooth" });
+  }
+
   // ===== Enhanced Menu Tab Logic with Smooth Transitions =====
   const tabBtns = document.querySelectorAll(".tab-btn");
   const tabContents = document.querySelectorAll(".menu-content");
@@ -25,6 +112,9 @@ document.addEventListener("DOMContentLoaded", function () {
         setTimeout(() => {
           targetContent.style.display = "block";
           targetContent.classList.add("active");
+          if (hasGsapTrigger) {
+            scrollTriggerRef.refresh();
+          }
         }, 50);
       } else {
         console.error(`Tab content with id "${tabId}" not found.`);
@@ -32,28 +122,28 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  console.log("Tea House Foe Foe website loaded with enhanced animations!");
+  console.log("MEDEA website loaded with enhanced animations.");
 
   // ===== Enhanced Navbar Scroll Effect with Smooth Transition =====
   const navbar = document.getElementById("navbar");
-  let lastScrollTop = 0;
+  const updateNavbarState = () => {
+    if (!navbar) return;
+    navbar.classList.toggle("scrolled", window.pageYOffset > 50);
+  };
 
   if (navbar) {
-    window.addEventListener(
-      "scroll",
-      function () {
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        
-        if (scrollTop > 50) {
-          navbar.classList.add("scrolled");
-        } else {
-          navbar.classList.remove("scrolled");
-        }
-        
-        lastScrollTop = scrollTop;
-      },
-      { passive: true }
-    );
+    if (hasGsapTrigger) {
+      scrollTriggerRef.create({
+        trigger: document.body,
+        start: "top top",
+        end: "bottom bottom",
+        onUpdate: updateNavbarState,
+      });
+      updateNavbarState();
+    } else {
+      window.addEventListener("scroll", updateNavbarState, { passive: true });
+      updateNavbarState();
+    }
   }
 
   // ===== Enhanced Mobile Menu Toggle with Smooth Animation =====
@@ -94,52 +184,81 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // ===== Enhanced Scroll Reveal Animation with Stagger Effect =====
-  const observerOptions = {
-    threshold: 0.1,
-    rootMargin: "0px 0px -80px 0px",
-  };
-
-  const observer = new IntersectionObserver(function (entries) {
-    entries.forEach((entry, index) => {
-      if (entry.isIntersecting) {
-        // Add stagger delay for multiple elements
-        setTimeout(() => {
-          entry.target.classList.add("visible");
-        }, index * 100);
-        observer.unobserve(entry.target);
-      }
-    });
-  }, observerOptions);
-
+  // ===== Enhanced Scroll Reveal Animation with GSAP ScrollTrigger =====
   const scrollElements = document.querySelectorAll("[data-scroll]");
-  scrollElements.forEach((element) => {
-    observer.observe(element);
-  });
+
+  if (hasGsapTrigger) {
+    scrollElements.forEach((element, index) => {
+      scrollTriggerRef.create({
+        trigger: element,
+        start: "top 85%",
+        once: true,
+        onEnter: () => {
+          setTimeout(() => {
+            element.classList.add("visible");
+          }, index * 100);
+        },
+      });
+    });
+  } else {
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: "0px 0px -80px 0px",
+    };
+
+    const observer = new IntersectionObserver(function (entries) {
+      entries.forEach((entry, index) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => {
+            entry.target.classList.add("visible");
+          }, index * 100);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, observerOptions);
+
+    scrollElements.forEach((element) => {
+      observer.observe(element);
+    });
+  }
 
   // ===== Enhanced Parallax Effect for Hero Background =====
   const heroBackground = document.querySelector(".hero-background");
-  if (window.innerWidth > 768 && heroBackground) {
-    let ticking = false;
-    
-    window.addEventListener(
-      "scroll",
-      function () {
-        if (!ticking) {
-          window.requestAnimationFrame(function() {
-            const scrolled = window.pageYOffset;
-            const parallaxSpeed = 0.5;
+  if (heroBackground) {
+    if (hasGsapTrigger && window.innerWidth > 768) {
+      gsapRef.to(heroBackground, {
+        yPercent: 16,
+        scale: 1.12,
+        ease: "none",
+        scrollTrigger: {
+          trigger: "#hero",
+          start: "top top",
+          end: "bottom top",
+          scrub: 1,
+        },
+      });
+    } else if (window.innerWidth > 768) {
+      let ticking = false;
 
-            if (scrolled < window.innerHeight) {
-              heroBackground.style.transform = `translateY(${scrolled * parallaxSpeed}px) scale(1.1)`;
-            }
-            ticking = false;
-          });
-          ticking = true;
-        }
-      },
-      { passive: true }
-    );
+      window.addEventListener(
+        "scroll",
+        function () {
+          if (!ticking) {
+            window.requestAnimationFrame(function () {
+              const scrolled = window.pageYOffset;
+              const parallaxSpeed = 0.5;
+
+              if (scrolled < window.innerHeight) {
+                heroBackground.style.transform = `translateY(${scrolled * parallaxSpeed}px) scale(1.1)`;
+              }
+              ticking = false;
+            });
+            ticking = true;
+          }
+        },
+        { passive: true }
+      );
+    }
   }
 
   // ===== Enhanced Image Lazy Loading with Smooth Fade In =====
@@ -278,34 +397,27 @@ document.addEventListener("DOMContentLoaded", function () {
   const scrollToTopBtn = document.getElementById("scrollToTop");
 
   if (scrollToTopBtn) {
-    let scrollTimeout;
-    
-    window.addEventListener(
-      "scroll",
-      function () {
-        clearTimeout(scrollTimeout);
-        
-        if (window.pageYOffset > 500) {
-          scrollToTopBtn.classList.add("visible");
-        } else {
-          scrollToTopBtn.classList.remove("visible");
-        }
-      },
-      { passive: true }
-    );
+    const updateScrollToTopState = () => {
+      scrollToTopBtn.classList.toggle("visible", window.pageYOffset > 500);
+    };
+
+    if (hasGsapTrigger) {
+      scrollTriggerRef.create({
+        trigger: document.body,
+        start: "top top",
+        end: "bottom bottom",
+        onUpdate: updateScrollToTopState,
+      });
+      updateScrollToTopState();
+    } else {
+      window.addEventListener("scroll", updateScrollToTopState, {
+        passive: true,
+      });
+      updateScrollToTopState();
+    }
 
     scrollToTopBtn.addEventListener("click", function () {
-      // Smooth scroll to top with easing
-      const scrollDuration = 800;
-      const scrollStep = -window.pageYOffset / (scrollDuration / 15);
-      
-      const scrollInterval = setInterval(() => {
-        if (window.pageYOffset !== 0) {
-          window.scrollBy(0, scrollStep);
-        } else {
-          clearInterval(scrollInterval);
-        }
-      }, 15);
+      smoothScrollToTarget(0, 0.9);
     });
   }
 
@@ -322,7 +434,6 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   // ===== Smooth Scroll for Navigation Links =====
-  // ===== Smooth Scroll for Navigation Links =====
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener("click", function (e) {
       e.preventDefault();
@@ -334,17 +445,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const target = document.querySelector(targetId);
       
       if (target) {
-        // Dynamically get the current header height for exact offset
-        const navbar = document.querySelector('.navbar');
-        const headerOffset = navbar ? navbar.offsetHeight : 100;
-        
-        const elementPosition = target.getBoundingClientRect().top;
-        const offsetPosition = elementPosition + window.scrollY - headerOffset;
-
-        window.scrollTo({
-          top: offsetPosition,
-          behavior: "smooth"
-        });
+        smoothScrollToTarget(target);
       }
     });
   });
@@ -355,7 +456,7 @@ document.addEventListener("DOMContentLoaded", function () {
     scrollIndicator.addEventListener("click", function() {
       const aboutSection = document.getElementById("about");
       if (aboutSection) {
-        aboutSection.scrollIntoView({ behavior: "smooth" });
+        smoothScrollToTarget(aboutSection);
       }
     });
   }
@@ -449,3 +550,4 @@ document.addEventListener("DOMContentLoaded", function () {
     performanceObserver.observe(el);
   });
 });
+

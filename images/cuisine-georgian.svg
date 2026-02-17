@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 560">
+  <rect width="720" height="560" fill="#f7efe3" />
+  <circle cx="190" cy="200" r="130" fill="#5b1020" opacity="0.85" />
+  <rect x="300" y="130" width="280" height="280" rx="28" fill="#1f1f24" />
+  <text x="320" y="280" font-size="42" font-family="Cormorant Garamond, serif" fill="#f7efe3">Georgian</text>
+  <text x="320" y="330" font-size="36" font-family="Cormorant Garamond, serif" fill="#c8a564">Kitchen</text>
+</svg>
